@@ -184,4 +184,44 @@ public class AdminDao extends PersonDao {
     }
     return admins;
   }
+
+  public List<Admin> getAdminByLevel(int level) throws SQLException {
+    List<Admin> admins = new ArrayList<>();
+    String selectAdmins = "SELECT Admin.UserName AS UserName,FirstName,LastName,PassWord,Email,Phone,Level "
+        + "FROM Admin INNER JOIN Person ON Admin.UserName=Person.UserName "
+        + "WHERE Person.FirstName=?;";
+    Connection connection = null;
+    PreparedStatement selectStmt = null;
+    ResultSet results = null;
+    try {
+      connection = connectionManager.getConnection();
+      selectStmt = connection.prepareStatement(selectAdmins);
+      selectStmt.setInt(1, level);
+      results = selectStmt.executeQuery();
+      while (results.next()) {
+        String userName = results.getString("UserName");
+        String firstName = results.getString("FirstName");
+        String lastName = results.getString("LastName");
+        String password = results.getString("PassWord");
+        String email = results.getString("Email");
+        String phone = results.getString("Phone");
+        Admin admin = new Admin(userName, firstName, lastName, password, email, phone, level);
+        admins.add(admin);
+      }
+    } catch (SQLException e) {
+      e.printStackTrace();
+      throw e;
+    } finally {
+      if (connection != null) {
+        connection.close();
+      }
+      if (selectStmt != null) {
+        selectStmt.close();
+      }
+      if (results != null) {
+        results.close();
+      }
+    }
+    return admins;
+  }
 }
